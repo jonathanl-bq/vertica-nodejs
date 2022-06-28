@@ -62,9 +62,12 @@ class Query extends EventEmitter {
       return false
     }
     // prepare if there are values
+    console.log("prepare if there are values")
     if (!this.values) {
+      console.log("!this.values")
       return false
     }
+    console.log(this.values.length)
     return this.values.length > 0
   }
 
@@ -97,6 +100,8 @@ class Query extends EventEmitter {
   }
 
   handleDataRow(msg) {
+    console.log("handleDataRow")
+    console.log(msg)
     let row
 
     if (this._canceledDueToError) {
@@ -110,8 +115,11 @@ class Query extends EventEmitter {
       return
     }
 
+    console.log("emit row")
     this.emit('row', row, this._result)
+    console.log("after emit row")
     if (this._accumulateRows) {
+      console.log("accumulateRows true")
       this._result.addRow(row)
     }
   }
@@ -138,6 +146,7 @@ class Query extends EventEmitter {
 
   handleError(err, connection) {
     // need to sync after error during a prepared statement
+    connection.sync()
     if (this._canceledDueToError) {
       err = this._canceledDueToError
       this._canceledDueToError = false
@@ -169,6 +178,7 @@ class Query extends EventEmitter {
       return new Error(`Prepared statements must be unique - '${this.name}' was used for a different statement`)
     }
     if (this.values && !Array.isArray(this.values)) {
+      console.log("Query values not array")
       return new Error('Query values must be an array')
     }
     if (this.requiresPreparation()) {
@@ -216,6 +226,7 @@ class Query extends EventEmitter {
   // [VERTICA specific] Bind and Execute are not sent until ParameterDescription is received because the dataTypeIDs
   // are not available for the Bind message otherwise
   handleParameterDescription(msg, connection) {
+    console.log("handleParameterDescription")
     // because we're mapping user supplied values to
     // postgres wire protocol compatible values it could
     // throw an exception, so try/catch this section

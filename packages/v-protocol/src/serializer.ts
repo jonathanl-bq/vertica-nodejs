@@ -106,6 +106,8 @@ const parse = (query: ParseOpts): Buffer => {
     .addCString(query.text) // actual query text
     .addInt16(len)
 
+  console.log(types)
+
   for (var i = 0; i < len; i++) {
     buffer.addInt32(types[i])
   }

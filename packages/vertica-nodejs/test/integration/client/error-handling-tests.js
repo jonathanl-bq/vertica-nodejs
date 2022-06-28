@@ -7,8 +7,8 @@ var vertica = helper.vertica
 const Client = vertica.Client
 const DatabaseError = vertica.DatabaseError
 
-var createErorrClient = function () {
-  var client = helper.client()
+var createErrorClient = async function () {
+  var client = await helper.client()
   client.once('error', function (err) {
     assert.fail('Client shoud not throw error during query execution')
   })
@@ -24,9 +24,9 @@ suite.test('sending non-array argument as values causes an error callback', (don
     if (err) {
       return done(err)
     }
-    client.query('select $1::text as name', 'foo', (err) => {
+    client.query('select ?::varchar as name', 'foo', (err) => {
       assert(err instanceof Error)
-      client.query('SELECT $1::text as name', ['foo'], (err, res) => {
+      client.query('SELECT ?::varchar as name', ['foo'], (err, res) => {
         assert.equal(res.rows[0].name, 'foo')
         client.end(done)
       })
@@ -102,40 +102,49 @@ suite.test('query receives error on client shutdown', function (done) {
   )
 })
 
-var ensureFuture = function (testClient, done) {
-  var goodQuery = testClient.query(new vertica.Query('select age from boom'))
+var ensureFuture = async function (testClient, done) {
+  testClient.on('drain', testClient.end.bind(testClient))
+  console.log("in ensureFuture")
+  var goodQuery = await testClient.query(new vertica.Query('select age from boom'))
+  console.log("sent simple query")
   assert.emits(goodQuery, 'row', function (row) {
+    console.log("before assert")
     assert.equal(row.age, 28)
+    console.log("done soon")
     done()
+    
   })
 }
 
-suite.test('when query is parsing', (done) => {
-  var client = createErorrClient()
+suite.test('when query is parsing', async (done) => {
+  var client = await helper.client()
+  //var client = await createErrorClient()
 
-  var q = client.query({ text: 'CREATE TEMP TABLE boom(age integer); INSERT INTO boom (age) VALUES (28);' })
+  var q = await client.query({ text: 'CREATE LOCAL TEMP TABLE boom(age integer); INSERT INTO boom (age) VALUES (28);' })
 
   // this query wont parse since there isn't a table named bang
-  var query = client.query(
+  var query = await client.query(
     new vertica.Query({
-      text: 'select * from bang where name = $1',
+      text: 'select * from bang where name = ?',
       values: ['0'],
     })
   )
 
-  assert.emits(query, 'error', function (err) {
+  assert.emits(query, 'error', async function (err) {
+    console.log("in error emit")
+    //query.on('readyForQuery', async () => ensureFuture(client, done))
     ensureFuture(client, done)
   })
 })
 
-suite.test('when a query is binding', function (done) {
-  var client = createErorrClient()
+suite.test('when a query is binding', async function (done) {
+  var client = await createErrorClient()
 
-  var q = client.query({ text: 'CREATE TEMP TABLE boom(age integer); INSERT INTO boom (age) VALUES (28);' })
+  var q = await client.query({ text: 'CREATE LOCAL TEMP TABLE boom(age integer); INSERT INTO boom (age) VALUES (28);' })
 
-  var query = client.query(
+  var query = await client.query(
     new vertica.Query({
-      text: 'select * from boom where age = $1',
+      text: 'select * from boom where age = ?',
       values: ['asldkfjasdf'],
     })
   )
@@ -212,7 +221,7 @@ suite.test('non-query error', function (done) {
 })
 
 suite.test('within a simple query', (done) => {
-  var client = createErorrClient()
+  var client = createErrorClient()
 
   var query = client.query(new vertica.Query("select eeeee from yodas_dsflsd where pixistix = 'zoiks!!!'"))
 

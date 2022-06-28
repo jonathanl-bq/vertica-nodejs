@@ -581,14 +581,18 @@ class Client extends EventEmitter {
   }
 
   _pulseQueryQueue() {
+    console.log("entered _pulseQueryQueue")
     if (this.readyForQuery === true) {
+      console.log("readyForQuery === true")
       this.activeQuery = this.queryQueue.shift()
       if (this.activeQuery) {
+        console.log("this.activeQuery === true")
         this.readyForQuery = false
         this.hasExecuted = true
 
         const queryError = this.activeQuery.submit(this.connection)
         if (queryError) {
+          console.log("queryError === true")
           process.nextTick(() => {
             this.activeQuery.handleError(queryError, this.connection)
             this.readyForQuery = true
@@ -596,6 +600,7 @@ class Client extends EventEmitter {
           })
         }
       } else if (this.hasExecuted) {
+        console.log("hasExecuted === true")
         this.activeQuery = null
         this.emit('drain')
       }
@@ -610,15 +615,19 @@ class Client extends EventEmitter {
     var readTimeoutTimer
     var queryCallback
 
+    console.log("entered query")
     if (config === null || config === undefined) {
       throw new TypeError('Client was passed a null or undefined query')
     } else if (typeof config.submit === 'function') {
+      console.log("config.submit === function")
       readTimeout = config.query_timeout || this.connectionParameters.query_timeout
       result = query = config
       if (typeof values === 'function') {
+        console.log("typeof values === function")
         query.callback = query.callback || values
       }
     } else {
+      console.log("else case")
       readTimeout = this.connectionParameters.query_timeout
       query = new Query(config, values, callback)
       if (!query.callback) {
@@ -629,9 +638,11 @@ class Client extends EventEmitter {
     }
 
     if (readTimeout) {
+      console.log("readTimeout case")
       queryCallback = query.callback
 
       readTimeoutTimer = setTimeout(() => {
+        console.log("readTimeoutTimer callback")
         var error = new Error('Query read timeout')
 
         process.nextTick(() => {
@@ -659,14 +670,18 @@ class Client extends EventEmitter {
       }
     }
 
+    console.log("before binary and !query.binary")
     if (this.binary && !query.binary) {
+      console.log("inside binary && !query.binary")
       query.binary = true
     }
 
+    console.log("before result")
     if (query._result && !query._result._types) {
       query._result._types = this._types
     }
 
+    console.log("before queryable")
     if (!this._queryable) {
       process.nextTick(() => {
         query.handleError(new Error('Client has encountered a connection error and is not queryable'), this.connection)
@@ -674,7 +689,9 @@ class Client extends EventEmitter {
       return result
     }
 
+    console.log("before ending")
     if (this._ending) {
+      console.log("this._ending true")
       process.nextTick(() => {
         query.handleError(new Error('Client was closed and is not queryable'), this.connection)
       })
@@ -683,6 +700,7 @@ class Client extends EventEmitter {
 
     this.queryQueue.push(query)
     this._pulseQueryQueue()
+    console.log("pulsed Query Queue")
     return result
   }
 
