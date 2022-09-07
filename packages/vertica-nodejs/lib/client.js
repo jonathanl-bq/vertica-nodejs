@@ -46,7 +46,8 @@ class Client extends EventEmitter {
       value: this.connectionParameters.password,
     })
 
-    this.protocol_version = this.connectionParameters.protocol_version
+    this.client_label = this.connectionParameters.client_label
+    //this.protocol_version = this.connectionParameters.protocol_version
 
     var c = config || {}
 
