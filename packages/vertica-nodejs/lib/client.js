@@ -69,6 +69,7 @@ class Client extends EventEmitter {
         client_label: this.connectionParameters.client_label,
       })
     this.queryQueue = []
+    this.binary = c.binary || defaults.binary
     this.processID = null
     this.secretKey = null
     this.tls_mode = this.connectionParameters.tls_mode || 'disable'
@@ -647,8 +648,7 @@ class Client extends EventEmitter {
       }
     }
 
-    const binary = c.binary || defaults.binary
-    if (binary && !query.binary) {
+    if (this.binary && !query.binary) {
       query.binary = true
     }
 
