@@ -36,6 +36,7 @@ class Client extends EventEmitter {
     this.port = this.connectionParameters.port
     this.host = this.connectionParameters.host
     this.backup_server_node = this.connectionParameters.backup_server_node
+    this.protocol_version = this.connectionParameters.protocol_version
 
     // "hiding" the password so it doesn't show up in stack traces
     // or if the client is console.logged
