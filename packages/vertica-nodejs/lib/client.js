@@ -46,6 +46,8 @@ class Client extends EventEmitter {
       value: this.connectionParameters.password,
     })
 
+    this.protocol_version = this.connectionParameters.protocol_version
+
     var c = config || {}
 
     this._Promise = c.Promise || global.Promise
