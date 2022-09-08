@@ -47,7 +47,7 @@ class Client extends EventEmitter {
     })
 
     this.client_label = this.connectionParameters.client_label
-    //this.protocol_version = this.connectionParameters.protocol_version
+    this.protocol_version = this.connectionParameters.protocol_version
 
     var c = config || {}
 
@@ -311,6 +311,7 @@ class Client extends EventEmitter {
 
   _handleParameterStatus(msg) {
     const min_supported_version = (3 << 16 | 5)         // 3.5
+    console.log("PROTOCOL VERSION IS: " + this.connectionParameters.protocol_version)
     const max_supported_version = this.connectionParameters.protocol_version // for now we are enforcing 3.5
     switch(msg.parameterName) {
       // right now we only care about the protocol_version
